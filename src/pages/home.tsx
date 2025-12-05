@@ -1,27 +1,50 @@
-import { Link } from "react-router-dom";
+import MainLayout from "../components/Layouts/MainLayout";
+import TableLayout from "../components/TableLayout";
+
+import { TableTd, TableTh, TableTr } from '../components/tables/TableComponents';
 
 export default function Home() {
+  const people = [
+    { id: "1", name: "João Silva", email: "joao@email.com" },
+    { id: "2", name: "Maria Oliveira", email: "maria@email.com" }
+  ];
+
+  const onEdit = (id: string) => {
+    console.log("Editar usuário:", id);
+  };
+
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100">
-      <div className="bg-white p-10 rounded-xl shadow-lg w-full max-w-md text-center">
-        <h1 className="text-3xl font-bold mb-4 text-gray-900">Bem-vindo!</h1>
-        <p className="text-gray-600 mb-6">Esta é a tela principal da aplicação.</p>
-        
-        <div className="flex flex-col gap-3">
-          <Link 
-            to="/login" 
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-200"
-          >
-            Fazer Login
-          </Link>
-          <Link 
-            to="/register" 
-            className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-all duration-200"
-          >
-            Criar Conta
-          </Link>
-        </div>
-      </div>
-    </div>
+    <MainLayout>
+      <TableLayout title="Estudantes" description="Lista de estudantes da instituição">
+        <table className="relative min-w-full divide-y divide-gray-300">
+          <thead>
+            <tr>
+              <TableTh>Nome</TableTh>
+              <TableTh>E-mail</TableTh>
+              <TableTh>Data de cadastro</TableTh>
+              <TableTh>Ações</TableTh>
+            </tr>
+          </thead>
+
+          <tbody className="bg-white">
+            {people.map((person) => (
+              <TableTr key={person.id} className="even:bg-gray-50">
+                <TableTd>{person.name}</TableTd>
+                <TableTd>{person.email}</TableTd>
+                <TableTd>05/12/2025</TableTd>
+                <TableTd className="pr-4 pl-3 sm:pr-3">
+                  <button
+                    className="text-indigo-600 hover:text-indigo-900 cursor-pointer"
+                    onClick={() => onEdit(person.id)}
+                  >
+                    Ver eventos
+                  </button>
+                </TableTd>
+              </TableTr>
+            ))}
+          </tbody>
+        </table>
+      </TableLayout>
+    </MainLayout>
   );
 }
