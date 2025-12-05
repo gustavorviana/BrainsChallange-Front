@@ -55,50 +55,38 @@ export default function Events() {
 
 	return (
 		<MainLayout>
-			<div className="px-4 sm:px-6 lg:px-8">
-				<Link
-					to="/"
-					className="inline-flex items-center gap-2 text-sm text-gray-600 hover:text-gray-900 mb-4"
-				>
-					<ArrowLeftIcon className="h-4 w-4" />
-					Voltar para estudantes
-				</Link>
+			<TableLayout
+				title="Eventos do Estudante"
+				description={`Lista de eventos relacionados ao estudante ID: ${studentId || 'N/A'}`}
+			>
+				<table className="relative min-w-full divide-y divide-gray-300">
+					<thead>
+						<tr>
+							<TableTh>Título</TableTh>
+							<TableTh>Descrição</TableTh>
+							<TableTh>Data</TableTh>
+							<TableTh>Status</TableTh>
+						</tr>
+					</thead>
 
-				<TableLayout
-					title="Eventos do Estudante"
-					description={`Lista de eventos relacionados ao estudante ID: ${studentId || 'N/A'}`}
-				>
-					<table className="relative min-w-full divide-y divide-gray-300">
-						<thead>
-							<tr>
-								<TableTh>Título</TableTh>
-								<TableTh>Descrição</TableTh>
-								<TableTh>Data</TableTh>
-								<TableTh>Status</TableTh>
-							</tr>
-						</thead>
-
-						<tbody className="bg-white">
-							{events.map((event) => (
-								<TableTr key={event.id} className="even:bg-gray-50">
-									<TableTd className="font-medium text-gray-900">
-										{event.title}
-									</TableTd>
-									<TableTd>{event.description}</TableTd>
-									<TableTd>{event.date}</TableTd>
-									<TableTd>
-										<span
-											className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(event.status)}`}
-										>
-											{event.status}
-										</span>
-									</TableTd>
-								</TableTr>
-							))}
-						</tbody>
-					</table>
-				</TableLayout>
-			</div>
+					<tbody className="bg-white">
+						{events.map((event) => (
+							<TableTr key={event.id} className="even:bg-gray-50">
+								<TableTd>{event.title}</TableTd>
+								<TableTd>{event.description}</TableTd>
+								<TableTd>{event.date}</TableTd>
+								<TableTd>
+									<span
+										className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusColor(event.status)}`}
+									>
+										{event.status}
+									</span>
+								</TableTd>
+							</TableTr>
+						))}
+					</tbody>
+				</table>
+			</TableLayout>
 		</MainLayout>
 	)
 }

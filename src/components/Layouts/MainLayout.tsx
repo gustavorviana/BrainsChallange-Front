@@ -1,84 +1,179 @@
 'use client'
 
 import { ReactNode, useState } from 'react'
-import { Dialog, DialogPanel } from '@headlessui/react'
-import { Bars3Icon } from '@heroicons/react/20/solid'
-import {
-    XMarkIcon,
-} from '@heroicons/react/24/outline'
+import { cn } from '../../utils/tailwindUtils'
 import { Link } from 'react-router-dom'
 
+import { Dialog, DialogBackdrop, DialogPanel, TransitionChild } from '@headlessui/react'
+import {
+    Bars3Icon,
+    UsersIcon,
+    XMarkIcon,
+    ArrowLeftEndOnRectangleIcon,
+    AcademicCapIcon
+} from '@heroicons/react/24/outline'
+
 const navigation = [
-    { name: 'Estudantes', href: '/' },
+    { name: 'Estudantes', href: '/', icon: UsersIcon, current: false },
 ]
 
 export default function MainLayout({ children }: {
     children: ReactNode;
 }) {
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+    const [sidebarOpen, setSidebarOpen] = useState(false)
 
     return (
-        <>
-            <header className="absolute inset-x-0 top-0 z-50 flex h-16 border-b border-gray-900/10 bg-white/10">
-                <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-                    <div className="flex flex-1 items-center gap-x-6">
-                        <button type="button" onClick={() => setMobileMenuOpen(true)} className="-m-3 p-3 md:hidden">
-                            <span className="sr-only">Open main menu</span>
-                            <Bars3Icon aria-hidden="true" className="size-5 text-gray-900" />
-                        </button>
-                    </div>
+        <div>
+            <Dialog open={sidebarOpen} onClose={setSidebarOpen} className="relative z-50 lg:hidden">
+                <DialogBackdrop
+                    transition
+                    className="fixed inset-0 bg-gray-900/80 transition-opacity duration-300 ease-linear data-closed:opacity-0"
+                />
 
-                    <nav className="hidden md:flex md:gap-x-11 md:text-sm/6 md:font-semibold md:text-gray-700">
-                        {navigation.map((item, itemIdx) => (
-                            <Link key={itemIdx} to={item.href}>
-                                {item.name}
-                            </Link>
-                        ))}
-                    </nav>
+                <div className="fixed inset-0 flex">
+                    <DialogPanel
+                        transition
+                        className="relative mr-16 flex w-full max-w-xs flex-1 transform transition duration-300 ease-in-out data-closed:-translate-x-full"
+                    >
+                        <TransitionChild>
+                            <div className="absolute top-0 left-full flex w-16 justify-center pt-5 duration-300 ease-in-out data-closed:opacity-0">
+                                <button type="button" onClick={() => setSidebarOpen(false)} className="-m-2.5 p-2.5">
+                                    <span className="sr-only">Fechar</span>
+                                    <XMarkIcon aria-hidden="true" className="size-6 text-white" />
+                                </button>
+                            </div>
+                        </TransitionChild>
 
-                    <div className="flex flex-1 items-center justify-end gap-x-8">
-                        <a href="/login" className="-m-1.5 p-1.5">
-                            Sair
-                        </a>
-                    </div>
-                </div>
-
-                <Dialog open={mobileMenuOpen} onClose={setMobileMenuOpen} className="lg:hidden">
-                    <div className="fixed inset-0 z-50" />
-                    <DialogPanel className="fixed inset-y-0 left-0 z-50 w-full overflow-y-auto bg-white px-4 pb-6 sm:max-w-sm sm:px-6 sm:ring-1 sm:ring-gray-900/10">
-                        <div className="relative -ml-0.5 flex h-16 items-center gap-x-6">
-                            <button
-                                type="button"
-                                onClick={() => setMobileMenuOpen(false)}
-                                className="-m-2.5 p-2.5 text-gray-700"
-                            >
-                                <span className="sr-only">Close menu</span>
-                                <XMarkIcon aria-hidden="true" className="size-6" />
-                            </button>
-                        </div>
-
-                        <div className="mt-2 space-y-2">
-                            {navigation.map((item) => (
-                                <Link
-                                    key={item.name}
-                                    to={item.href}
-                                    className="-mx-3 block rounded-lg px-3 py-2 text-base font-semibold text-gray-900 hover:bg-gray-50"
-                                >
-                                    {item.name}
-                                </Link>
-                            ))}
+                        <div className="relative flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-2 dark:bg-gray-900 dark:ring dark:ring-white/10 dark:before:pointer-events-none dark:before:absolute dark:before:inset-0 dark:before:bg-black/10">
+                            <div className="relative flex h-16 shrink-0 items-center">
+                                <h1 className='text-white flex'>
+                                    <AcademicCapIcon
+                                        aria-hidden="true"
+                                        className='text-gray-400 dark:group-hover:text-white size-6 shrink-0 mr-2'
+                                    />
+                                    Brain Challange
+                                </h1>
+                            </div>
+                            <nav className="relative flex flex-1 flex-col">
+                                <ul role="list" className="flex flex-1 flex-col gap-y-7">
+                                    <li>
+                                        <ul role="list" className="-mx-2 space-y-1">
+                                            {navigation.map((item) => (
+                                                <li key={item.name}>
+                                                    <a
+                                                        href={item.href}
+                                                        className={cn(
+                                                            item.current
+                                                                ? 'bg-gray-50 text-blue-600 dark:bg-white/5 dark:text-white'
+                                                                : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white',
+                                                            'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
+                                                        )}
+                                                    >
+                                                        <item.icon
+                                                            aria-hidden="true"
+                                                            className={cn(
+                                                                item.current
+                                                                    ? 'text-blue-600 dark:text-white'
+                                                                    : 'text-gray-400 dark:group-hover:text-white',
+                                                                'size-6 shrink-0',
+                                                            )}
+                                                        />
+                                                        {item.name}
+                                                    </a>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </nav>
                         </div>
                     </DialogPanel>
-                </Dialog>
-            </header>
+                </div>
+            </Dialog>
 
-            <div className="mx-auto max-w-7xl pt-16 lg:flex lg:gap-x-16 lg:px-8">
-                <main className="px-4 py-16 sm:px-6 lg:flex-auto lg:px-0 lg:py-20">
-                    <div className="mx-auto max-w-2xl space-y-16 sm:space-y-20 lg:mx-0 lg:max-w-none">
-                        {children}
+            <div className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col dark:bg-gray-900">
+                <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 dark:border-white/10 dark:bg-black/10">
+                    <div className="flex h-16 shrink-0 items-center">
+                        <h1 className='text-white flex'>
+                            <AcademicCapIcon
+                                aria-hidden="true"
+                                className='text-gray-400 dark:group-hover:text-white size-6 shrink-0 mr-2'
+                            />
+                            Brain Challange
+                        </h1>
                     </div>
-                </main>
+                    <nav className="flex flex-1 flex-col">
+                        <ul role="list" className="flex flex-1 flex-col gap-y-7">
+                            <li>
+                                <ul role="list" className="flex flex-1 flex-col gap-y-7">
+                                    <li>
+                                        <ul role="list" className="-mx-2 space-y-1">
+                                            {navigation.map((item) => (
+                                                <li key={item.name}>
+                                                    <a
+                                                        href={item.href}
+                                                        className={cn(
+                                                            item.current
+                                                                ? 'bg-gray-50 text-blue-600 dark:bg-white/5 dark:text-white'
+                                                                : 'text-gray-700 hover:bg-gray-50 hover:text-blue-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white',
+                                                            'group flex gap-x-3 rounded-md p-2 text-sm/6 font-semibold',
+                                                        )}
+                                                    >
+                                                        <item.icon
+                                                            aria-hidden="true"
+                                                            className={cn(
+                                                                item.current
+                                                                    ? 'text-blue-600 dark:text-white'
+                                                                    : 'text-gray-400 dark:group-hover:text-white',
+                                                                'size-6 shrink-0',
+                                                            )}
+                                                        />
+                                                        {item.name}
+                                                    </a>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </li>
+                            <li className="-mx-6 mt-auto">
+                                <Link
+                                    to="/Login"
+                                    className="flex items-center gap-x-4 px-6 py-3 text-sm/6 font-semibold text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-white/5"
+                                >
+
+                                    <ArrowLeftEndOnRectangleIcon
+                                        aria-hidden="true"
+                                        className={cn(
+                                            'text-gray-400 dark:group-hover:text-white size-6 shrink-0',
+                                        )}
+                                    />
+                                    Sair
+                                </Link>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
             </div>
-        </>
+
+            <div className="sticky top-0 z-40 flex items-center gap-x-6 bg-white px-4 py-4 shadow-xs sm:px-6 lg:hidden dark:bg-gray-900 dark:shadow-none dark:after:pointer-events-none dark:after:absolute dark:after:inset-0 dark:after:border-b dark:after:border-white/10 dark:after:bg-black/10">
+                <button
+                    type="button"
+                    onClick={() => setSidebarOpen(true)}
+                    className="-m-2.5 p-2.5 text-gray-700 hover:text-gray-900 lg:hidden dark:text-gray-400 dark:hover:text-white"
+                >
+                    <span className="sr-only">Open sidebar</span>
+                    <Bars3Icon aria-hidden="true" className="size-6" />
+                </button>
+                <div className="flex-1 text-sm/6 font-semibold text-gray-900 dark:text-white">Dashboard</div>
+                <Link to="/Login" className='text-white'>Sair</Link>
+            </div>
+
+            <main className="py-10 lg:pl-72">
+                <div className="px-4 sm:px-6 lg:px-8">
+                    {children}
+                </div>
+            </main>
+        </div >
     )
 }
