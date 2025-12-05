@@ -1,24 +1,19 @@
-import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate } from "react-router-dom";
 import Alert from "./Alert";
+import { useAuth } from "../hooks/useAuth";
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
-  password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
+  password: z.string().min(1, "A senha é obrigatória"),
 });
 
 type LoginData = z.infer<typeof loginSchema>;
 
-const VALID_EMAIL = "admin@admin.com";
-const VALID_PASSWORD = "teste123";
-
 export default function LoginForm() {
-  const navigate = useNavigate();
-  const [showError, setShowError] = useState(false);
-  
+  const { isLoading, error, login, clearError } = useAuth();
+
   const {
     register,
     handleSubmit,
@@ -27,24 +22,20 @@ export default function LoginForm() {
     resolver: zodResolver(loginSchema),
   });
 
-  const onSubmit = (data: LoginData) => {
-    if (data.email === VALID_EMAIL && data.password === VALID_PASSWORD) {
-      navigate("/");
-    } else {
-      setShowError(true);
-    }
+  const onSubmit = async (data: LoginData) => {
+    await login(data);
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-      {showError && (
+      {error && (
         <Alert
-          message="As credenciais falharam"
-          onClose={() => setShowError(false)}
+          message={error}
+          onClose={clearError}
           type="error"
         />
       )}
-      
+
       <div>
         <label className="block text-sm font-medium text-gray-700">
           Email
@@ -89,13 +80,15 @@ export default function LoginForm() {
 
       <button
         type="submit"
+        disabled={isLoading}
         className="
           w-full bg-blue-600 hover:bg-blue-700 
+          disabled:bg-blue-400 disabled:cursor-not-allowed
           text-white font-semibold py-2 rounded-lg 
           transition-all duration-200 cursor-pointer
         "
       >
-        Entrar
+        {isLoading ? 'Entrando...' : 'Entrar'}
       </button>
     </form>
   );
