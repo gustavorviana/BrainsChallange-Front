@@ -1,15 +1,17 @@
-import { ReactNode } from "react";
+import React, { ReactNode } from "react";
 
 interface TableLayoutProps {
     children: ReactNode;
     title: string;
     description: string;
+    searchSlot?: ReactNode;
 }
 
-export default function TableLayout({
+export default function Home({
     children,
     title,
-    description
+    description,
+    searchSlot
 }: TableLayoutProps) {
     return (
         <div className="px-4 sm:px-6 lg:px-8">
@@ -21,6 +23,12 @@ export default function TableLayout({
                     </p>
                 </div>
             </div>
+
+            {searchSlot && (
+                <div className="mt-4">
+                    {searchSlot}
+                </div>
+            )}
 
             <div className="mt-8 flow-root">
                 <div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">

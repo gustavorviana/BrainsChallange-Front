@@ -2,7 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Home from "./pages/home";
-import Events from "./pages/Events";
+import StudentEvents from "./pages/StudentEvents";
 
 export default function App() {
   return (
@@ -10,7 +10,7 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
-      <Route path="/events/:studentId" element={<Events />} />
+      <Route path="/students/:studentId/events" element={<StudentEvents />} />
     </Routes>
   );
 }

@@ -18,8 +18,8 @@ export function TableTh(props: TableBaseComponentProps) {
     </th>);
 }
 
-export function TableTd(props: TableBaseComponentProps) {
-    return (<td className={cn("px-3 py-4 text-sm whitespace-nowrap text-gray-500", props.className)}>
+export function TableTd(props: TableBaseComponentProps & { colSpan?: number }) {
+    return (<td className={cn("px-3 py-4 text-sm whitespace-nowrap text-gray-500", props.className)} colSpan={props.colSpan}>
         {props.children}
     </td>);
 }
