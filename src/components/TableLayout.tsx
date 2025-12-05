@@ -6,7 +6,7 @@ interface TableLayoutProps {
     description: string;
 }
 
-export default function Home({
+export default function TableLayout({
     children,
     title,
     description

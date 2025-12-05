@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import MainLayout from "../components/Layouts/MainLayout";
 import TableLayout from "../components/TableLayout";
 
@@ -8,10 +9,6 @@ export default function Home() {
     { id: "1", name: "João Silva", email: "joao@email.com" },
     { id: "2", name: "Maria Oliveira", email: "maria@email.com" }
   ];
-
-  const onEdit = (id: string) => {
-    console.log("Editar usuário:", id);
-  };
 
   return (
     <MainLayout>
@@ -33,12 +30,12 @@ export default function Home() {
                 <TableTd>{person.email}</TableTd>
                 <TableTd>05/12/2025</TableTd>
                 <TableTd className="pr-4 pl-3 sm:pr-3">
-                  <button
+                  <Link
+                    to={`/events/${person.id}`}
                     className="text-indigo-600 hover:text-indigo-900 cursor-pointer"
-                    onClick={() => onEdit(person.id)}
                   >
                     Ver eventos
-                  </button>
+                  </Link>
                 </TableTd>
               </TableTr>
             ))}
