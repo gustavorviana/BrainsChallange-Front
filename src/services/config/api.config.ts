@@ -14,7 +14,10 @@ apiClient.interceptors.response.use(
 	(response) => response,
 	(error) => {
 		if (error.response?.status === 401) {
-			window.location.href = '/login'
+			const isVerifyEndpoint = error.config?.url?.includes('/api/Auth/verify')
+			if (!isVerifyEndpoint) {
+				window.location.href = '/login'
+			}
 		}
 		return Promise.reject(error)
 	}

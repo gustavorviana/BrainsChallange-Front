@@ -1,8 +1,8 @@
 'use client'
 
-import { ReactNode, useState } from 'react'
+import { ReactNode, useEffect, useState } from 'react'
 import { cn } from '../../utils/tailwindUtils'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import { Dialog, DialogBackdrop, DialogPanel, TransitionChild } from '@headlessui/react'
 import {
@@ -12,6 +12,7 @@ import {
     ArrowLeftEndOnRectangleIcon,
     AcademicCapIcon
 } from '@heroicons/react/24/outline'
+import { useAuth } from '../../hooks/useAuth'
 
 const navigation = [
     { name: 'Estudantes', href: '/', icon: UsersIcon, current: false },
@@ -20,7 +21,17 @@ const navigation = [
 export default function MainLayout({ children }: {
     children: ReactNode;
 }) {
-    const [sidebarOpen, setSidebarOpen] = useState(false)
+    const navigate = useNavigate()
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+    const { authStatus } = useAuth();
+
+    useEffect(() => {
+        if (authStatus === 'Unauthenticated')
+            navigate('/login')
+    }, [authStatus]);
+
+    if (authStatus !== 'Authenticated')
+        return <></>;
 
     return (
         <div>

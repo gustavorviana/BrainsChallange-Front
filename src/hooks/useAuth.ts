@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { authService } from '../services'
 import type { LoginRequest, RegisterRequest } from '../services'
@@ -7,17 +7,21 @@ interface UseAuthReturn {
 	isLoading: boolean
 	error: string | null
 	success: boolean
+	authStatus: AuthStatus
 	login: (data: LoginRequest) => Promise<void>
 	register: (data: RegisterRequest) => Promise<void>
 	clearError: () => void
 	clearSuccess: () => void
 }
 
+export type AuthStatus = 'Loading' | 'Authenticated' | 'Unauthenticated';
+
 export function useAuth(): UseAuthReturn {
 	const navigate = useNavigate()
 	const [isLoading, setIsLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
 	const [success, setSuccess] = useState(false)
+	const [authStatus, setAuthStatus] = useState<AuthStatus>('Loading');
 
 	const clearError = () => {
 		setError(null)
@@ -26,6 +30,15 @@ export function useAuth(): UseAuthReturn {
 	const clearSuccess = () => {
 		setSuccess(false)
 	}
+
+	const checkAuth = async () => {
+		const status = await authService.verify();
+		setAuthStatus(status ? 'Authenticated' : 'Unauthenticated');
+	}
+
+	useEffect(() => {
+		checkAuth()
+	}, [checkAuth])
 
 	const login = async (data: LoginRequest): Promise<void> => {
 		setIsLoading(true)
@@ -37,14 +50,15 @@ export function useAuth(): UseAuthReturn {
 		} catch (err: unknown) {
 			if (err && typeof err === 'object' && 'response' in err) {
 				const axiosError = err as {
-					response?: { data?: { detail?: string; title?: string } }
+					response?: { data?: { message?: string; detail?: string; title?: string } }
 				}
-				const errorDetail =
+				const errorMessage =
+					axiosError.response?.data?.message ||
 					axiosError.response?.data?.detail ||
 					axiosError.response?.data?.title
 				setError(
-					errorDetail ||
-						'As credenciais falharam. Verifique seu email e senha.'
+					errorMessage ||
+					'As credenciais falharam. Verifique seu email e senha.'
 				)
 			} else {
 				setError('Erro ao fazer login. Tente novamente.')
@@ -69,12 +83,13 @@ export function useAuth(): UseAuthReturn {
 		} catch (err: unknown) {
 			if (err && typeof err === 'object' && 'response' in err) {
 				const axiosError = err as {
-					response?: { data?: { detail?: string; title?: string } }
+					response?: { data?: { message?: string; detail?: string; title?: string } }
 				}
-				const errorDetail =
+				const errorMessage =
+					axiosError.response?.data?.message ||
 					axiosError.response?.data?.detail ||
 					axiosError.response?.data?.title
-				setError(errorDetail || 'Erro ao criar conta. Tente novamente.')
+				setError(errorMessage || 'Erro ao criar conta. Tente novamente.')
 			} else {
 				setError('Erro ao criar conta. Tente novamente.')
 			}
@@ -88,6 +103,7 @@ export function useAuth(): UseAuthReturn {
 		isLoading,
 		error,
 		success,
+		authStatus,
 		login,
 		register,
 		clearError,
