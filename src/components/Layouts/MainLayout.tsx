@@ -1,7 +1,7 @@
 'use client'
 
 import { ReactNode, useEffect, useState } from 'react'
-import { cn } from '../../utils/tailwindUtils'
+import { cn } from '@/utils/tailwindUtils'
 import { Link, useNavigate } from 'react-router-dom'
 
 import { Dialog, DialogBackdrop, DialogPanel, TransitionChild } from '@headlessui/react'
@@ -12,7 +12,7 @@ import {
     ArrowLeftEndOnRectangleIcon,
     AcademicCapIcon
 } from '@heroicons/react/24/outline'
-import { useAuth } from '../../hooks/useAuth'
+import { useAuth } from '@/hooks/useAuth'
 
 const navigation = [
     { name: 'Estudantes', href: '/', icon: UsersIcon, current: false },

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import MainLayout from "../components/Layouts/MainLayout";
-import TableLayout from "../components/TableLayout";
-import Pagination from "../components/Pagination";
+import MainLayout from "@/components/Layouts/MainLayout";
+import TableLayout from "@/components/TableLayout";
+import Pagination from "@/components/Pagination";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
-import { eventsService, EEventResponseType } from "../services/events.service";
-import type { StudentEventResponse } from "../services/types/event.types";
-import { TableTd, TableTh, TableTr } from '../components/tables/TableComponents';
+import { eventsService, EEventResponseType } from "@/services/events.service";
+import type { StudentEventResponse } from "@/services/types/event.types";
+import { TableTd, TableTh, TableTr } from '@/components/tables/TableComponents';
 
 function getStatusText(status: string | null): string {
   if (!status) return 'Não respondido';

@@ -1,5 +1,5 @@
 import { ReactNode } from 'react';
-import { cn } from '../../utils/tailwindUtils';
+import { cn } from '@/utils/tailwindUtils';
 
 interface TableBaseComponentProps {
     children?: ReactNode;

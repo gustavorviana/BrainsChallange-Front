@@ -1,5 +1,5 @@
-import AuthLayout from "../components/Layouts/AuthLayout";
-import RegisterForm from "../components/RegisterForm";
+import AuthLayout from "@/components/Layouts/AuthLayout";
+import RegisterForm from "@/components/RegisterForm";
 import { Link } from "react-router-dom";
 
 export default function Register() {

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { authService } from '../services'
-import type { LoginRequest, RegisterRequest } from '../services'
+import { authService } from '@/services'
+import type { LoginRequest, RegisterRequest } from '@/services'
 
 interface UseAuthReturn {
 	isLoading: boolean
