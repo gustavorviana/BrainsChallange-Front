@@ -2,6 +2,7 @@ export interface StudentResponse {
 	id: string
 	name: string | null
 	email: string | null
+	createdAt: string | null
 }
 
 export interface StudentResponsePagedResult {

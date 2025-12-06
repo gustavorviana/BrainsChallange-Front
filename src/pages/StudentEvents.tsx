@@ -1,42 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import MainLayout from "../components/Layouts/MainLayout";
 import TableLayout from "../components/TableLayout";
+import Pagination from "../components/Pagination";
 import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { eventsService, EEventResponseType } from "../services/events.service";
+import type { StudentEventResponse } from "../services/types/event.types";
 import { TableTd, TableTh, TableTr } from '../components/tables/TableComponents';
 
-type EEventResponseType = 'Accepted' | 'Declined' | 'Pending' | null;
-
-interface Event {
-  id: string;
-  name: string;
-  date: string;
-  status: EEventResponseType;
-}
-
-function getStatusText(status: EEventResponseType): string {
+function getStatusText(status: string | null): string {
+  if (!status) return 'Não respondido';
+  
   switch (status) {
-    case 'Accepted':
+    case EEventResponseType.Accepted:
       return 'Aceito';
-    case 'Declined':
+    case EEventResponseType.Declined:
       return 'Recusado';
-    case 'Pending':
-      return 'Pendente';
+    case EEventResponseType.TentativelyAccepted:
+      return 'Aceito com ressalvas';
+    case EEventResponseType.Organizer:
+      return 'Organizador';
+    case EEventResponseType.NotResponded:
+      return 'Não respondido';
     default:
-      return 'Pendente';
+      return 'Não respondido';
   }
 }
 
-function getStatusColor(status: EEventResponseType): string {
+function getStatusColor(status: string | null): string {
+  if (!status) return 'bg-gray-100 text-gray-800';
+  
   switch (status) {
-    case 'Accepted':
+    case EEventResponseType.Accepted:
       return 'bg-green-100 text-green-800';
-    case 'Declined':
+    case EEventResponseType.Declined:
       return 'bg-red-100 text-red-800';
-    case 'Pending':
+    case EEventResponseType.TentativelyAccepted:
       return 'bg-yellow-100 text-yellow-800';
+    case EEventResponseType.Organizer:
+      return 'bg-blue-100 text-blue-800';
+    case EEventResponseType.NotResponded:
+      return 'bg-gray-100 text-gray-800';
     default:
-      return 'bg-yellow-100 text-yellow-800';
+      return 'bg-gray-100 text-gray-800';
   }
 }
 
@@ -46,22 +52,60 @@ export default function StudentEvents() {
   
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
-  const [status, setStatus] = useState<EEventResponseType>(null);
+  const [status, setStatus] = useState<EEventResponseType | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [events, setEvents] = useState<StudentEventResponse[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const loadEvents = async (page: number = 1) => {
+    if (!studentId) return;
+
+    setIsLoading(true);
+    try {
+      const params: {
+        page?: number;
+        studentId?: string;
+        startDate?: string;
+        endDate?: string;
+        status?: EEventResponseType;
+      } = {
+        page,
+        studentId,
+      };
+
+      if (startDate) {
+        params.startDate = new Date(startDate).toISOString();
+      }
+      if (endDate) {
+        params.endDate = new Date(endDate).toISOString();
+      }
+      if (status) {
+        params.status = status;
+      }
+
+      const response = await eventsService.getStudentEvents(params);
+      setEvents(response.items || []);
+      setTotalPages(response.totalPages || 1);
+      setCurrentPage(page);
+    } catch (error) {
+      console.error("Erro ao carregar eventos:", error);
+      setEvents([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadEvents(1);
+  }, [studentId]);
 
   const handleSearch = () => {
-    const params = new URLSearchParams();
-    
-    if (startDate) {
-      params.append('startDate', new Date(startDate).toISOString());
-    }
-    if (endDate) {
-      params.append('endDate', new Date(endDate).toISOString());
-    }
-    if (status) {
-      params.append('status', status);
-    }
+    loadEvents(1);
+  };
 
-    console.log("Buscando eventos com parâmetros:", params.toString());
+  const handlePageChange = (page: number) => {
+    loadEvents(page);
   };
 
   const searchSlot = (
@@ -115,9 +159,11 @@ export default function StudentEvents() {
             className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
           >
             <option value="">Todos</option>
-            <option value="Accepted">Aceito</option>
-            <option value="Declined">Recusado</option>
-            <option value="Pending">Pendente</option>
+            <option value={EEventResponseType.Accepted}>Aceito</option>
+            <option value={EEventResponseType.Declined}>Recusado</option>
+            <option value={EEventResponseType.TentativelyAccepted}>Aceito com ressalvas</option>
+            <option value={EEventResponseType.Organizer}>Organizador</option>
+            <option value={EEventResponseType.NotResponded}>Não respondido</option>
           </select>
         </div>
 
@@ -134,11 +180,21 @@ export default function StudentEvents() {
     </div>
   );
 
-  // Dados mockados - substituir por dados da API
-  const events: Event[] = [
-    { id: "1", name: "Evento 1", date: "2025-01-15", status: "Accepted" },
-    { id: "2", name: "Evento 2", date: "2025-01-20", status: "Pending" },
-  ];
+  const formatDate = (dateString: string | null) => {
+    if (!dateString) return '-';
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch {
+      return dateString;
+    }
+  };
 
   return (
     <MainLayout>
@@ -151,23 +207,31 @@ export default function StudentEvents() {
           <thead>
             <tr>
               <TableTh>Nome do Evento</TableTh>
-              <TableTh>Data</TableTh>
+              <TableTh>Data Início</TableTh>
+              <TableTh>Data Fim</TableTh>
               <TableTh>Status</TableTh>
             </tr>
           </thead>
 
           <tbody className="bg-white">
-            {events.length === 0 ? (
+            {isLoading ? (
               <TableTr>
-                <TableTd colSpan={3} className="text-center py-8 text-gray-500">
+                <TableTd colSpan={4} className="text-center py-8 text-gray-500">
+                  Carregando...
+                </TableTd>
+              </TableTr>
+            ) : events.length === 0 ? (
+              <TableTr>
+                <TableTd colSpan={4} className="text-center py-8 text-gray-500">
                   Nenhum evento encontrado
                 </TableTd>
               </TableTr>
             ) : (
               events.map((event) => (
                 <TableTr key={event.id} className="even:bg-gray-50">
-                  <TableTd>{event.name}</TableTd>
-                  <TableTd>{event.date}</TableTd>
+                  <TableTd>{event.subject || '-'}</TableTd>
+                  <TableTd>{formatDate(event.start)}</TableTd>
+                  <TableTd>{formatDate(event.end)}</TableTd>
                   <TableTd>
                     <span
                       className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${getStatusColor(event.status)}`}
@@ -180,6 +244,13 @@ export default function StudentEvents() {
             )}
           </tbody>
         </table>
+        {!isLoading && events.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        )}
       </TableLayout>
     </MainLayout>
   );

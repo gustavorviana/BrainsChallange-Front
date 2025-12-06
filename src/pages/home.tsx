@@ -1,32 +1,49 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import MainLayout from "../components/Layouts/MainLayout";
 import TableLayout from "../components/TableLayout";
+import Pagination from "../components/Pagination";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-
+import { studentsService } from "../services/students.service";
+import type { StudentResponse } from "../services/types/student.types";
+import { formatDateBr } from '../utils/dateUtils';
 import { TableTd, TableTh, TableTr } from '../components/tables/TableComponents';
 
 export default function Home() {
-  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [students, setStudents] = useState<StudentResponse[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const people = [
-    { id: "1", name: "João Silva", email: "joao@email.com" },
-    { id: "2", name: "Maria Oliveira", email: "maria@email.com" }
-  ];
-
-  const handleSearch = () => {
-    console.log("Buscando por:", searchTerm);
+  const loadStudents = async (page: number = 1, search?: string) => {
+    setIsLoading(true);
+    try {
+      const response = await studentsService.getStudents({
+        page,
+        search: search || undefined,
+      });
+      setStudents(response.items || []);
+      setTotalPages(response.totalPages || 1);
+      setCurrentPage(page);
+    } catch (error) {
+      console.error("Erro ao carregar estudantes:", error);
+      setStudents([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const filteredPeople = people.filter(
-    (person) =>
-      person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      person.email.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  useEffect(() => {
+    loadStudents(1);
+  }, []);
 
-  const onViewEvents = (id: string) => {
-    navigate(`/students/${id}/events`);
+  const handleSearch = () => {
+    loadStudents(1, searchTerm);
+  };
+
+  const handlePageChange = (page: number) => {
+    loadStudents(page, searchTerm);
   };
 
   const searchSlot = (
@@ -60,8 +77,8 @@ export default function Home() {
 
   return (
     <MainLayout>
-      <TableLayout 
-        title="Estudantes" 
+      <TableLayout
+        title="Estudantes"
         description="Lista de estudantes da instituição"
         searchSlot={searchSlot}
       >
@@ -76,23 +93,44 @@ export default function Home() {
           </thead>
 
           <tbody className="bg-white">
-            {filteredPeople.map((person) => (
-              <TableTr key={person.id} className="even:bg-gray-50">
-                <TableTd>{person.name}</TableTd>
-                <TableTd>{person.email}</TableTd>
-                <TableTd>05/12/2025</TableTd>
-                <TableTd className="pr-4 pl-3 sm:pr-3">
-                  <button
-                    className="text-blue-600 hover:text-blue-900 cursor-pointer"
-                    onClick={() => onViewEvents(person.id)}
-                  >
-                    Ver eventos
-                  </button>
+            {isLoading ? (
+              <TableTr>
+                <TableTd colSpan={4} className="text-center py-8 text-gray-500">
+                  Carregando...
                 </TableTd>
               </TableTr>
-            ))}
+            ) : students.length === 0 ? (
+              <TableTr>
+                <TableTd colSpan={4} className="text-center py-8 text-gray-500">
+                  Nenhum estudante encontrado
+                </TableTd>
+              </TableTr>
+            ) : (
+              students.map((student) => (
+                <TableTr key={student.id} className="even:bg-gray-50">
+                  <TableTd>{student.name || '-'}</TableTd>
+                  <TableTd>{student.email || '-'}</TableTd>
+                  <TableTd>{formatDateBr(student.createdAt)}</TableTd>
+                  <TableTd className="pr-4 pl-3 sm:pr-3">
+                    <Link
+                      className="text-blue-600 hover:text-blue-900 cursor-pointer"
+                      to={`/students/${student.id}/events`}
+                    >
+                      Ver eventos
+                    </Link>
+                  </TableTd>
+                </TableTr>
+              ))
+            )}
           </tbody>
         </table>
+        {!isLoading && students.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        )}
       </TableLayout>
     </MainLayout>
   );

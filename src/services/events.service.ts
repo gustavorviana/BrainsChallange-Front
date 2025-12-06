@@ -3,6 +3,7 @@ import type {
 	GetStudentEventsParams,
 	StudentEventResponsePagedResult,
 } from './types/event.types'
+import { EEventResponseType } from './types/event.types'
 
 export const eventsService = {
 	async getStudentEvents(
@@ -18,10 +19,10 @@ export const eventsService = {
 	},
 }
 
+export { EEventResponseType }
 export type {
 	GetStudentEventsParams,
 	StudentEventResponsePagedResult,
-	EEventResponseType,
 } from './types/event.types'
 export type { StudentEventResponse } from './types/event.types'
 
