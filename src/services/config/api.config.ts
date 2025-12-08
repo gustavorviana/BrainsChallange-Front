@@ -1,4 +1,4 @@
-import axios, { AxiosInstance } from 'axios'
+import axios, { AxiosError, AxiosInstance } from 'axios'
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'
 
@@ -23,3 +23,14 @@ apiClient.interceptors.response.use(
 	}
 )
 
+export function parseMessageFromAxiosError(err: unknown, defaultMessage: string) {
+	if (!isAxiosError(err))
+		return defaultMessage;
+
+	var data = err.response?.data as { message?: string; }
+	return data?.message ?? defaultMessage;
+}
+
+export function isAxiosError(err: unknown): err is AxiosError {
+	return !!err && typeof err === 'object' && 'response' in err;
+}

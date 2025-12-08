@@ -1,113 +1,116 @@
-import { useEffect, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { authService } from '@/services'
-import type { LoginRequest, RegisterRequest } from '@/services'
+import { useEffect, useState, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { authService } from '@/services';
+import type { LoginRequest, RegisterRequest } from '@/services';
+import { parseMessageFromAxiosError } from '@/services/config/api.config';
 
 interface UseAuthReturn {
-	isLoading: boolean
-	error: string | null
-	success: boolean
-	authStatus: AuthStatus
-	login: (data: LoginRequest) => Promise<void>
-	register: (data: RegisterRequest) => Promise<void>
-	clearError: () => void
-	clearSuccess: () => void
+  isLoading: boolean;
+  error: string | null;
+  success: boolean;
+  authStatus: AuthStatus;
+  login: (data: LoginRequest) => Promise<void>;
+  register: (data: RegisterRequest) => Promise<void>;
+  logout: () => Promise<void>;
+  clearError: () => void;
+  clearSuccess: () => void;
 }
 
-export type AuthStatus = 'Loading' | 'Authenticated' | 'Unauthenticated';
+export type AuthStatus = "Loading" | "Authenticated" | "Unauthenticated";
 
 export function useAuth(): UseAuthReturn {
-	const navigate = useNavigate()
-	const [isLoading, setIsLoading] = useState(false)
-	const [error, setError] = useState<string | null>(null)
-	const [success, setSuccess] = useState(false)
-	const [authStatus, setAuthStatus] = useState<AuthStatus>('Loading');
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+  const [authStatus, setAuthStatus] = useState<AuthStatus>("Loading");
 
-	const clearError = () => {
-		setError(null)
-	}
+  const clearError = () => {
+    setError(null);
+  };
 
-	const clearSuccess = () => {
-		setSuccess(false)
-	}
+  const clearSuccess = () => {
+    setSuccess(false);
+  };
 
-	const checkAuth = async () => {
-		const status = await authService.verify();
-		setAuthStatus(status ? 'Authenticated' : 'Unauthenticated');
-	}
+  const checkAuth = useCallback(async () => {
+    try {
+      const status = await authService.verify();
+      setAuthStatus(status ? "Authenticated" : "Unauthenticated");
+    } catch (error) {
+      setAuthStatus("Unauthenticated");
+    }
+  }, []);
 
-	useEffect(() => {
-		checkAuth()
-	}, [checkAuth])
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
 
-	const login = async (data: LoginRequest): Promise<void> => {
-		setIsLoading(true)
-		setError(null)
+  const login = async (data: LoginRequest): Promise<void> => {
+    setIsLoading(true);
+    setError(null);
 
-		try {
-			await authService.login(data)
-			navigate('/')
-		} catch (err: unknown) {
-			if (err && typeof err === 'object' && 'response' in err) {
-				const axiosError = err as {
-					response?: { data?: { message?: string; detail?: string; title?: string } }
-				}
-				const errorMessage =
-					axiosError.response?.data?.message ||
-					axiosError.response?.data?.detail ||
-					axiosError.response?.data?.title
-				setError(
-					errorMessage ||
-					'As credenciais falharam. Verifique seu email e senha.'
-				)
-			} else {
-				setError('Erro ao fazer login. Tente novamente.')
-			}
-			throw err
-		} finally {
-			setIsLoading(false)
-		}
-	}
+    try {
+      await authService.login(data);
+      setAuthStatus("Authenticated");
 
-	const register = async (data: RegisterRequest): Promise<void> => {
-		setIsLoading(true)
-		setError(null)
-		setSuccess(false)
+      // Redireciona para a rota original ou para home
+      const from =
+        (location.state as { from?: { pathname: string } })?.from?.pathname ||
+        "/";
+      navigate(from, { replace: true });
+    } catch (err: unknown) {
+      setError(parseMessageFromAxiosError(err, "Erro ao fazer login. Tente novamente mais tarde."))
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-		try {
-			await authService.register(data)
-			setSuccess(true)
-			setTimeout(() => {
-				navigate('/')
-			}, 1500)
-		} catch (err: unknown) {
-			if (err && typeof err === 'object' && 'response' in err) {
-				const axiosError = err as {
-					response?: { data?: { message?: string; detail?: string; title?: string } }
-				}
-				const errorMessage =
-					axiosError.response?.data?.message ||
-					axiosError.response?.data?.detail ||
-					axiosError.response?.data?.title
-				setError(errorMessage || 'Erro ao criar conta. Tente novamente.')
-			} else {
-				setError('Erro ao criar conta. Tente novamente.')
-			}
-			throw err
-		} finally {
-			setIsLoading(false)
-		}
-	}
+  const register = async (data: RegisterRequest): Promise<void> => {
+    setIsLoading(true);
+    setError(null);
+    setSuccess(false);
 
-	return {
-		isLoading,
-		error,
-		success,
-		authStatus,
-		login,
-		register,
-		clearError,
-		clearSuccess,
-	}
+    try {
+      await authService.register(data);
+      setAuthStatus("Authenticated");
+      setSuccess(true);
+      setTimeout(() => {
+        const from =
+          (location.state as { from?: { pathname: string } })?.from?.pathname ||
+          "/";
+        navigate(from, { replace: true });
+      }, 1500);
+    } catch (err: unknown) {
+      setError(parseMessageFromAxiosError(err, "Erro ao fazer login. Tente novamente mais tarde."))
+      throw err;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const logout = async (): Promise<void> => {
+    try {
+      // Se houver um endpoint de logout, chame aqui
+      // await authService.logout()
+      setAuthStatus("Unauthenticated");
+      navigate("/login", { replace: true });
+    } catch (error) {
+      console.error("Erro ao fazer logout:", error);
+    }
+  };
+
+  return {
+    isLoading,
+    error,
+    success,
+    authStatus,
+    login,
+    register,
+    logout,
+    clearError,
+    clearSuccess,
+  };
 }
-
